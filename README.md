@@ -2,7 +2,7 @@
 
 Changes
 - 1) It's working (there was incorrect call to the script at the end of debug.lua
-- 2) It works on Radiomaster TX16S (should also work on Jumper and Horus) other radios make require some tweaks to supportedRadios list in ![](CROSSFIRE/DEVADDR.lua)
+- 2) It works on Radiomaster TX16S (should also work on Jumper and Horus) other radios make require some tweaks to supportedRadios list in CROSSFIRE/DEVADDR.lua
 
 Some code was borrowed from ELSR setup script https://github.com/ExpressLRS/ExpressLRS
 
