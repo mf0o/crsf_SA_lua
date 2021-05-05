@@ -11,6 +11,89 @@ local fieldChunk = 0
 local fieldData = {}
 local fields = {}
 
+local supportedRadios =
+{
+    ["128x64"]  =
+    {
+        --highRes         = false,
+        textSize        = SMLSIZE,
+        xOffset         = 60,
+        yOffset         = 8,
+        yOffset_val     = 3,
+        topOffset       = 1,
+        leftOffset      = 1,
+		xOffset1        = 90,
+		xOffset2        = 110,
+		xOffset3        = 130,
+		xOffset4        = 140,
+		xOffset5        = 200,		
+    },
+    ["128x96"]  =
+    {
+        --highRes         = false,
+        textSize        = SMLSIZE,
+        xOffset         = 60,
+        yOffset         = 8,
+        yOffset_val     = 3,
+        topOffset       = 1,
+        leftOffset      = 1,
+		xOffset1        = 90,
+		xOffset2        = 110,
+		xOffset3        = 130,
+		xOffset4        = 140,
+		xOffset5        = 200,
+	},
+    ["212x64"]  =
+    {
+        --highRes         = false,
+        textSize        = SMLSIZE,
+        xOffset         = 60,
+        yOffset         = 8,
+        yOffset_val     = 3,
+        topOffset       = 1,
+        leftOffset      = 1,
+		xOffset1        = 90,
+		xOffset2        = 110,
+		xOffset3        = 130,
+		xOffset4        = 140,
+		xOffset5        = 200,
+	},
+    ["480x272"] =
+    {
+        --highRes         = true,
+        textSize        = 0,
+        xOffset         = 100,
+        yOffset         = 20,
+        yOffset_val     = 8,
+        topOffset       = 1,
+        leftOffset      = 1,
+		xOffset1        = 100,
+		xOffset2        = 140,
+		xOffset3        = 180,
+		xOffset4        = 240,
+		xOffset5        = 300,
+    },
+    ["320x480"] =
+    {
+        --highRes         = true,
+        textSize        = 0,
+        xOffset         = 120,
+        yOffset         = 25,
+        yOffset_val     = 5,
+        topOffset       = 5,
+        leftOffset      = 5,
+		xOffset1        = 90,
+		xOffset2        = 110,
+		xOffset3        = 130,
+		xOffset4        = 140,
+		xOffset5        = 200,
+	},
+}
+
+local radio_resolution = LCD_W.."x"..LCD_H
+local radio_data = assert(supportedRadios[radio_resolution], radio_resolution.." not supported")
+
+
 local function getField(line)
   local counter = 1
   for i = 1, #fields do
@@ -174,8 +257,8 @@ local function fieldSignedSave(field, size)
 end
 
 local function fieldIntDisplay(field, y, attr)
-  lcd.drawNumber(140, y, field.value, LEFT + attr)
-  lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
+  lcd.drawNumber(radio_data.xOffset4, y, field.value, LEFT + attr)
+  lcd.drawText(radio_data.xOffset5, y, "_"..field.unit, attr)
 end
 
 -- UINT8
@@ -238,8 +321,8 @@ local function fieldFloatDisplay(field, y, attr)
   else
     attrnum = LEFT + attr
   end
-  lcd.drawNumber(140, y, field.value, attrnum)
-  lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
+  lcd.drawNumber(radio_data.xOffset4, y, field.value, attrnum)
+  lcd.drawText(radio_data.xOffset5, y, field.unit, attr)
 end
 
 local function fieldFloatSave(field)
@@ -268,11 +351,11 @@ local function fieldTextSelectionDisplay(field, y, attr)
 	-- this displays the option value like mw etc
 	
 	
-  lcd.drawText(140, y, field.values[field.value+1], attr)
-  lcd.drawText(90, y, deviceId, attr)
-  lcd.drawText(110, y, field.id, attr)
-  lcd.drawText(130, y, field.value, attr)
-  lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
+  lcd.drawText(radio_data.xOffset1, y, deviceId, attr)
+  lcd.drawText(radio_data.xOffset2, y, field.id, attr)
+  lcd.drawText(radio_data.xOffset3, y, field.value, attr)
+  lcd.drawText(radio_data.xOffset4, y, field.values[field.value+1], attr)
+  lcd.drawText(radio_data.xOffset5, y, field.unit, attr)
 	
 	
 	
@@ -297,10 +380,10 @@ end
 
 local function fieldStringDisplay(field, y, attr)
   if edit == true and attr then
-    lcd.drawText(140, y, field.value, FIXEDWIDTH)
+    lcd.drawText(radio_data.xOffset4, y, field.value, FIXEDWIDTH)
     lcd.drawText(134+6*charIndex, y, string.sub(field.value, charIndex, charIndex), FIXEDWIDTH + attr)
   else
-    lcd.drawText(140, y, field.value, attr)
+    lcd.drawText(radio_data.xOffset4, y, field.value, attr)
   end
 end
 
@@ -325,7 +408,7 @@ end
 local function fieldCommandDisplay(field, y, attr)
   lcd.drawText(0, y, field.name, attr)
   if field.info ~= "" then
-    lcd.drawText(140, y, "[" .. field.info .. "]")
+    lcd.drawText(radio_data.xOffset4, y, "[" .. field.info .. "]")
   end
 end
 
@@ -412,7 +495,7 @@ end
 
 -- Main
 local function runDevicePage(event)
-  if event == EVT_EXIT_BREAK then             -- exit script
+  if event == EVT_VIRTUAL_EXIT or event == EVT_EXIT_BREAK or event == EVT_RTN_FIRST then             -- exit script
     if edit == true then
       edit = false
       local field = getField(lineIndex)
@@ -423,7 +506,7 @@ local function runDevicePage(event)
     else
       return "crossfire.lua"
     end
-  elseif event == EVT_ENTER_BREAK then        -- toggle editing/selecting current field
+  elseif event == EVT_VIRTUAL_ENTER or event == EVT_ENTER_BREAK then        -- toggle editing/selecting current field
     local field = getField(lineIndex)
     if field.name then
       if field.type == 10 then
@@ -444,32 +527,38 @@ local function runDevicePage(event)
       end
     end
   elseif edit then
-    if event == EVT_PLUS_FIRST or event == EVT_PLUS_REPT then
+    if event == EVT_VIRTUAL_NEXT or event == EVT_VIRTUAL_NEXT_REPT or event == EVT_ROT_RIGHT or event == EVT_SLIDE_RIGHT then
       incrField(1)
-    elseif event == EVT_MINUS_FIRST or event == EVT_MINUS_REPT then
+    elseif event == EVT_VIRTUAL_PREV or event == EVT_VIRTUAL_PREV_REPT or event == EVT_ROT_LEFT or event == EVT_SLIDE_LEFT then
       incrField(-1)
     end
   else
-    if event == EVT_MINUS_FIRST then
-      selectField(1)
-    elseif event == EVT_PLUS_FIRST then
+    if event == EVT_VIRTUAL_PREV or event == EVT_VIRTUAL_PREV_REPT or event == EVT_ROT_LEFT or event == EVT_SLIDE_LEFT then
       selectField(-1)
+    elseif event == EVT_VIRTUAL_NEXT or event == EVT_VIRTUAL_NEXT_REPT or event == EVT_ROT_RIGHT or event == EVT_SLIDE_RIGHT then
+      selectField(1)
     end
   end
 
   lcd.clear()
-  lcd.drawScreenTitle(deviceName, 0, 0)
+  --lcd.drawScreenTitle(deviceName, 0, 0)
+  lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
+  lcd.drawText(1, 5, deviceName, MENU_TITLE_COLOR)
+  
+  local yOffset = radio_data.yOffset_val
+  local lOffset = radio_data.leftOffset
   for y = 1, 7 do
+	local item_y = yOffset + radio_data.yOffset * y
     local field = getField(pageOffset+y)
     if not field then
       break
     elseif field.name == nil then
-      lcd.drawText(0, 1+8*y, "...")
+      lcd.drawText(lOffset, yOffset*y, "...")
     else
       local attr = lineIndex == (pageOffset+y) and ((edit == true and BLINK or 0) + INVERS) or 0
-      lcd.drawText(0, 1+8*y, field.name)
+      lcd.drawText(lOffset, item_y, field.name)
       if functions[field.type+1] then
-        functions[field.type+1].display(field, 1+8*y, attr)
+        functions[field.type+1].display(field, item_y, attr)
       end
     end
   end
