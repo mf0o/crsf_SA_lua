@@ -1,3 +1,11 @@
+# Some fixes to original script
+
+Changes
+- 1) It's working (there was incorrect call to the script at the end of debug.lua
+- 2) It works on Radiomaster TX16S (should also work on Jumper and Horus) other radios make require some tweaks to supportedRadios list in ![](CROSSFIRE/DEVADDR.lua)
+
+Some code was borrowed from ELSR setup script https://github.com/ExpressLRS/ExpressLRS
+
 # TBS Crossfire SmartAudio Script
 
 Foreword: I'm not an OpenTX or experienced LUA programmer. Just sharing a homebrewed script.
@@ -5,8 +13,6 @@ Foreword: I'm not an OpenTX or experienced LUA programmer. Just sharing a homebr
 This LUA script lets you change the output power of your a VTX which is connnected to a TBS Crossfire RX, based on a switch on your Radio.
 
 The work is done through a MIXERS script, for easier setup a debug CROSSFIRE Lua Script is provided.
-
-![HIGHLEVEL](img/HLD.png)
 
 ## Requirements
 - OpenTX 2.2/2.3x compiled with LUA support (like opentx-x9d+-noheli-lua-luac-en)
